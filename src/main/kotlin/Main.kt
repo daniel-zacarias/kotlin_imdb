@@ -15,10 +15,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,7 +32,8 @@ import extensions.loadImageBitmap
 import models.Movie
 
 @Composable
-@Preview fun app() {
+@Preview
+fun app(movies: List<Movie>) {
         val scrollState = rememberScrollState()
         MaterialTheme (
             colors = darkColors(
@@ -42,34 +48,6 @@ import models.Movie
                         orientation = Orientation.Vertical
                     )
                 ) {
-                    val movies = listOf<Movie>(
-                        Movie(
-                            "Vingadores: Ultimato",
-                            "https://img.elo7.com.br/product/zoom/2678F78" +
-                                    "/cartaz-poster-vingadores-4-ultimato-filme-marvel-avengers-colecionador.jpg",
-                            10.0,
-                            2019),
-                        Movie(
-                            "Homem-aranha: Longe de casa",
-                            "https://br.web.img2.acsta.net/pictures/19/07/05/17/30/5167951.jpg",
-                            8.0,
-                            2019),
-                        Movie(
-                            "Homem-aranha: Longe de casa",
-                            "https://br.web.img2.acsta.net/pictures/19/07/05/17/30/5167951.jpg",
-                            8.0,
-                            2019),
-                        Movie(
-                            "Homem-aranha: Longe de casa",
-                            "https://br.web.img2.acsta.net/pictures/19/07/05/17/30/5167951.jpg",
-                            8.0,
-                            2019),
-                        Movie(
-                            "Homem-aranha: Longe de casa",
-                            "https://br.web.img2.acsta.net/pictures/19/07/05/17/30/5167951.jpg",
-                            8.0,
-                            2019)
-                    )
                     LazyColumn { items(movies) { movie -> movieItem(movie = movie) } }
                 }
             }
@@ -78,13 +56,15 @@ import models.Movie
 
 @Composable
 private fun movieItem(movie: Movie){
-    val image = movie.image
     return Column(
         modifier = Modifier.width(200.dp).padding(16.dp)
     ) {
-        Image(bitmap = image.loadImageBitmap(),
-            contentDescription = "Poster do filme Vingadores: Ultimato",
-            modifier = Modifier.clip(RoundedCornerShape(4.dp)))
+        Image(bitmap = movie.image.loadImageBitmap(),
+            contentDescription = "capa do filme",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(4.dp)),
+            contentScale = ContentScale.Crop)
         Row (
             modifier = Modifier.fillMaxWidth()
                 .padding(
@@ -129,8 +109,14 @@ private fun movieItem(movie: Movie){
 }
 
 fun main() = application {
-    MovieWebClient().findTop250Movies()
+    val client = MovieWebClient()
+    var movies: List<Movie> by remember {
+        mutableStateOf(emptyList())
+    }
+    client.findTop250Movies{
+        movies = it
+    }
     Window(onCloseRequest = ::exitApplication, title = "IMDB") {
-        app()
+        app(movies)
     }
 }
